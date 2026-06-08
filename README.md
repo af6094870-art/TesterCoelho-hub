@@ -2680,7 +2680,7 @@ local Workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
 
 -- VARIÁVEIS DE CONTROLE
-_G.BarcoSelecionado = "Guardian" -- Valor padrão inicial (Com a primeira letra maiúscula para a Workspace)
+_G.BarcoSelecionado = "Guardian" -- Valor padrão inicial
 _G.AutoSpawnBoat = false
 
 -- FUNÇÃO DE VOO FÍSICO ANTI-CHEAT
@@ -2709,13 +2709,13 @@ local function voarFisicoAntiCheat(hrp, posicaoAlvo, humanoid)
     humanoid:ChangeState(Enum.HumanoidStateType.Standing)
 end
 
--- 1. DROPDOWN DE SELEÇÃO DO BARCO (De volta ao jogo!)
+-- 1. DROPDOWN DE SELEÇÃO DO BARCO
 Tabs.seaevent:AddDropdown("DropdownBarcos", {
     Title = "Selecionar Barco",
-    Values = {"Guardian"}, -- Adicione outros barcos aqui se quiser (Ex: {"Guardian", "Beast Hunter"})
+    Values = {"Guardian"},
     CurrentOption = "Guardian",
     Callback = function(Value)
-        _G.BarcoSelecionado = Value -- Salva o nome exato do barco selecionado
+        _G.BarcoSelecionado = Value
     end
 })
 
@@ -2743,7 +2743,7 @@ Tabs.seaevent:AddToggle("AutoSpawnBoatToggle", {
                         if not _G.AutoSpawnBoat then return end
                         task.wait(0.3)
                         
-                        -- ETAPA 2: Executa o controle remoto apenas UMA vez usando o barco selecionado no Dropdown
+                        -- ETAPA 2: Executa os args e o remote EXATAMENTE juntos (uma única vez)
                         local args = {
                             "BuyBoat",
                             _G.BarcoSelecionado
@@ -2778,6 +2778,17 @@ Tabs.seaevent:AddToggle("AutoSpawnBoatToggle", {
                 end)
             end)
         else
+            -- Limpeza de forças caso desligue a toggle no meio do caminho
+            pcall(function()
+                local character = LocalPlayer.Character
+                local hrp = character and character:FindFirstChild("HumanoidRootPart")
+                if hrp and hrp:FindFirstChild("AntiCheatFlyForce") then
+                    hrp.AntiCheatFlyForce:Destroy()
+                end
+            end)
+        end
+    end
+})
             -- Limpeza de forças caso desligue a toggle no meio do caminho
             pcall(function()
                 local character = LocalPlayer.Character
