@@ -2683,7 +2683,7 @@ local LocalPlayer = Players.LocalPlayer
 _G.BarcoSelecionado = "guardian" -- Valor padrão inicial
 _G.AutoSpawnBoat = false
 
--- FUNÇÃO DE VOO FÍSICO ANTI-CHEAT
+-- FUNÇÃO DE VOO FÍSICO ANTI-CHEAT (Ajustada e Segura)
 local function voarFisicoAntiCheat(hrp, posicaoAlvo, humanoid)
     humanoid:ChangeState(Enum.HumanoidStateType.Physics)
     
@@ -2700,9 +2700,9 @@ local function voarFisicoAntiCheat(hrp, posicaoAlvo, humanoid)
         local direcao = distanciaVector.Unit
         local distancia = distanciaVector.Magnitude
         
-        local velocidadeMax = (_G.VelocidadeFarmBone and _G.VelocidadeFarmBone > 0) and _G.VelocidadeFarmBone or 300
-        -- Reduz a velocidade na chegada para não dar tranco no Anti-Cheat
-        local velocidadeAtual = distancia < 20 and (velocidadeMax * 0.3) or velocidadeMax
+        -- Velocidade otimizada para evitar Kick do servidor (Padrão: 85)
+        local velocidadeMax = 85 
+        local velocidadeAtual = distancia < 20 and (velocidadeMax * 0.4) or velocidadeMax
         
         bv.Velocity = direcao * velocidadeAtual
         hrp.CFrame = CFrame.lookAt(hrp.Position, Vector3.new(posicaoAlvo.X, hrp.Position.Y, posicaoAlvo.Z))
@@ -2744,53 +2744,64 @@ Tabs.seaevent:AddToggle("AutoSpawnBoatToggle", {
                             return 
                         end
                         
-                        -- PASSO 1: Verificar a pasta de barcos para ver se o seu já está spawnado
+                        -- PASSO 1: Verificar se o seu barco já está na Workspace
                         local pastaBoats = Workspace:FindFirstChild("Boats")
-                        -- Formatando o nome para bater com a pasta (ex: "guardian" -> "Guardian")
-                        local nomePastaBarco = _G.BarcoSelecionado == "guardian" and "Guardian" or _G.BarcoSelecionado
-                        local meuBarco = pastaBoats and pastaBoats:FindFirstChild(nomePastaBarco)
+                        local meuBarco = nil
                         
+                        -- Procura um barco que pertença ao jogador na pasta
+                        if pastaBoats then
+                            for _, barco in ipairs(pastaBoats:GetChildren()) do
+                                if barco:FindFirstChild("Owner") and barco.Owner.Value == LocalPlayer.Name then
+                                    meuBarco = barco
+                                    break
+                                end
+                            end
+                        end
+                        
+                        -- PASSO 2: Se não tem barco, voa até o Luxury Boat Dealer e compra
                         if not meuBarco then
-                            -- PASSO 2: Se não tem barco, voa até o Luxury Boat Dealer
                             local dealer = Workspace:FindFirstChild("NPCs") and Workspace.NPCs:FindFirstChild("Luxury Boat Dealer")
-                            local dealerPart = dealer and dealer:FindFirstChild("UpperTorso")
+                            local dealerPart = dealer and (dealer:FindFirstChild("UpperTorso") or dealer:FindFirstChild("HumanoidRootPart"))
                             
                             if dealerPart then
-                                -- Voa até o NPC
                                 voarFisicoAntiCheat(hrp, dealerPart.Position, humanoid)
                                 if not _G.AutoSpawnBoat then return end
-                                task.wait(0.3)
+                                task.wait(0.5)
                                 
-                                -- COMPRA O BARCO (Executa o InvokeServer enviado)
+                                -- Executa o controle remoto de compra nativo do Blox Fruits
+                                local nomeBarcoFormatado = _G.BarcoSelecionado == "guardian" and "Guardian" or _G.BarcoSelecionado
                                 local args = {
                                     "BuyBoat",
-                                    _G.BarcoSelecionado == "guardian" and "Guardian" or _G.BarcoSelecionado
+                                    nomeBarcoFormatado
                                 }
                                 game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CommF_"):InvokeServer(unpack(args))
-                                task.wait(1) -- Espera o barco carregar na Workspace
+                                task.wait(1.5) -- Tempo para o barco spawnar fisicamente
                             else
-                                warn("Luxury Boat Dealer ou UpperTorso nao encontrado!")
+                                warn("Luxury Boat Dealer não encontrado na Workspace!")
                                 task.wait(1)
                             end
                         else
-                            -- PASSO 3: Se o barco já existe, localiza o assento (VehicleSeat)
-                            local assento = meuBarco:FindFirstChild("VehicleSeat")
+                            -- PASSO 3: Se o barco existe, entra no assento do piloto
+                            local assento = meuBarco:FindFirstChildOfClass("VehicleSeat") or meuBarco:FindFirstChild("VehicleSeat")
                             
                             if assento then
-                                -- Voa até o banco do barco e fica lá travado enquanto a toggle estiver ativa
-                                voarFisicoAntiCheat(hrp, assento.Position, humanoid)
-                                
-                                -- Mantém você grudado/voando no assento de forma contínua
-                                if _G.AutoSpawnBoat and (hrp.Position - assento.Position).Magnitude <= 5 then
-                                    hrp.CFrame = assento.CFrame * CFrame.new(0, 1, 0) -- Fica 1 stud acima para não clipar
+                                -- Se estiver longe do assento, voa até ele
+                                if (hrp.Position - assento.Position).Magnitude > 5 then
+                                    voarFisicoAntiCheat(hrp, assento.Position, humanoid)
+                                else
+                                    -- Chegou no assento! Senta no barco e encerra o loop de teleporte para você poder pilotar
+                                    if humanoid.SeatPart ~= assento then
+                                        assento:Sit(humanoid)
+                                    end
+                                    task.wait(0.5)
                                 end
                             else
-                                warn("VehicleSeat nao encontrado no barco!")
+                                warn("Assento do veículo não encontrado no barco!")
                                 task.wait(0.5)
                             end
                         end
                     end)
-                    task.wait(0.1)
+                    task.wait(0.2)
                 end
                 
                 -- Limpeza das forças físicas ao desligar a Toggle
