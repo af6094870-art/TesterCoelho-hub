@@ -2456,7 +2456,7 @@ local function equiparArmaOficial()
 end
 
 -- TOGGLE DO FARM DO CAKE PRINCE
-Tabs.seaevent:AddToggle("AutoFarmCakePrinceToggle", {
+Tabs.Stack:AddToggle("AutoFarmCakePrinceToggle", {
     Title = "Auto Farm Cake Prince",
     Default = false,
     Callback = function(Value)
@@ -2953,7 +2953,7 @@ _G.SelectNPC = "Blox Fruits Dealer"
 
 if CurrentWorld == "World 1" then
     Teleport1:Dropdown({
-        Name = "Select NPC (Sea 1)",
+        Name = "Select NPC ",
         Flag = "Dropdown",
         Items = {"Random Devil Fruit", "Blox Fruits Dealer", "Remove Devil Fruit", "Ability Teacher", "Dark Step", "Electro", "Fishman Karate"},
         Default = 1,
@@ -2962,8 +2962,8 @@ if CurrentWorld == "World 1" then
         end
     })
 elseif CurrentWorld == "World 2" then
-    Teleport1:Dropdown({
-        Name = "Select NPC (Sea 2)",
+    Tabs.Teleport:Dropdown({
+        Name = "Select NPC ",
         Flag = "Dropdown",
         Items = {"Dragon Breath", "Mysterious Man", "Mysterious Scientist", "Awakening Expert", "Nerd", "Bar Manager", "Blox Fruits Dealer", "Trevor", "Enhancement Editor", "Pirate Recruiter", "Marines Recruiter", "Chemist", "Cyborg", "Ghoul Mark", "Guashiem", "El Admin", "El Rodolfo", "Arowe"},
         Default = 1,
@@ -2972,8 +2972,8 @@ elseif CurrentWorld == "World 2" then
         end
     })
 elseif CurrentWorld == "World 3" then
-    Teleport1:Dropdown({
-        Name = "Select NPC (Sea 3)",
+    Tabs.Teleport:Dropdown({
+        Name = "Select NPC ",
         Flag = "Dropdown",
         Items = {"Blox Fruits Dealer", "Remove Devil Fruit", "Horned Man", "Hungry Man", "Previous Hero", "Butler", "Lunoven", "Trevor", "Elite Hunter", "Player Hunter", "Uzoth"},
         Default = 1,
@@ -2990,7 +2990,7 @@ end
 -- ⚡ TOGGLE DO TELEPORTE (O LOOP DO TP)
 -- ==========================================
 
-Teleport1:Toggle({
+Tabs.Teleport:AddToggle("Auto Teleporter Npc", {
     Name = "Auto Teleporter Npc",
     Flag = "Toggle",
     Default = false,
