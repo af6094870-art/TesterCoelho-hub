@@ -2704,11 +2704,7 @@ local function voarFisicoAntiCheat(hrp, posicaoAlvo, humanoid)
         
         RunService.Heartbeat:Wait()
     end
-    
-    if bv then bv:Destroy() end
-    humanoid:ChangeState(Enum.HumanoidStateType.Standing)
-end
-
+  
 -- 1. DROPDOWN DE SELEÇÃO DO BARCO
 Tabs.seaevent:AddDropdown("DropdownBarcos", {
     Title = "Selecionar Barco",
@@ -2756,10 +2752,10 @@ Tabs.seaevent:AddToggle("AutoSpawnBoatToggle", {
                                 if not _G.AutoSpawnBoat then return end
                                 task.wait(0.3)
                                 
-                                -- COMPRA O BARCO (Executa o InvokeServer enviado)
+                                -- COMPRA O BARCO (Lógica literal exigida)
                                 local args = {
                                     "BuyBoat",
-                                    _G.BarcoSelecionado == "guardian" and "Guardian" or _G.BarcoSelecionado
+                                    "Guardian"
                                 }
                                 game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CommF_"):InvokeServer(unpack(args))
                                 task.wait(1) -- Espera o barco carregar na Workspace
